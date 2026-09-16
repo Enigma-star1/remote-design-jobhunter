@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Design Job Command Center — Balogun Olamide</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#0C0E17',
+                            surface: '#151824',
+                            surfaceHover: '#1D2132',
+                            card: '#181C2B',
+                            teal: '#0A858A',
+                            tealHover: '#0D949A',
+                            coral: '#E5674C',
+                            coralHover: '#F0755C',
+                            border: '#262C3F',
+                            textMuted: '#94A3B8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0C0E17;
+            color: #F1F5F9;
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #10131E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262C3F;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0A858A;
+        }
+        .kanban-column {
+            min-height: calc(100vh - 220px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-teal selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-brand-border bg-brand-surface/90 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-teal to-brand-coral flex items-center justify-center font-bold text-white shadow-lg shadow-brand-teal/20">
+                    BO
+                </div>
+                <div>
+                    <h1 class="text-base font-bold font-display tracking-tight text-white flex items-center gap-2">
+                        Design Job Machine <span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-medium">100% Free Direct Apply · No Paywalls</span>
+                    </h1>
+                    <p class="text-xs text-brand-textMuted">Balogun Olamide · UI/UX & Graphic Design Pipeline</p>
+                </div>
+            </div>
+
+            <!-- View Switcher Tabs -->
+            <nav class="flex items-center space-x-1 bg-brand-navy p-1 rounded-xl border border-brand-border">
+                <button onclick="switchTab('feed')" id="tab-btn-feed" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-brand-teal text-white shadow transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                    Live Jobs (<span id="total-jobs-badge">0</span>)
+                </button>
+                <button onclick="switchTab('kanban')" id="tab-btn-kanban" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-brand-textMuted hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    Pipeline Tracker (<span id="total-apps-badge">0</span>)
+                </button>
+                <button onclick="switchTab('studio')" id="tab-btn-studio" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-brand-textMuted hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Pitch Studio
+                </button>
+                <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-brand-textMuted hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Telegram & Alerts
+                </button>
+            </nav>
+
+            <!-- Instant Scan Button -->
+            <button onclick="triggerScan()" id="btn-scan" class="flex items-center gap-2 bg-gradient-to-r from-brand-teal to-emerald-600 hover:from-brand-tealHover hover:to-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-lg shadow-brand-teal/20 transition transform active:scale-95">
+                <svg id="scan-spinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                <svg id="scan-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Scan Job Boards</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6">
+
+        <!-- 1. LIVE JOBS FEED TAB -->
+        <section id="tab-feed" class="tab-content block space-y-6">
+            <!-- Filter & Search Bar -->
+            <div class="bg-brand-surface p-4 rounded-2xl border border-brand-border shadow-xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex-1 min-w-[280px] relative">
+                    <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-brand-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" id="search-input" onkeyup="debounceLoadJobs()" placeholder="Search title, company, skills (e.g. Figma, Illustrator, UI)..." 
+                        class="w-full bg-brand-navy border border-brand-border rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-brand-textMuted focus:outline-none focus:border-brand-teal transition">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <!-- Category Filter -->
+                    <select id="filter-category" onchange="loadJobs()" class="bg-brand-navy border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-teal transition">
+                        <option value="all">All Design Roles</option>
+                        <option value="UI/UX">UI/UX & Product Design</option>
+                        <option value="Graphic">Graphic & Visual Design</option>
+                    </select>
+
+                    <!-- Level Filter -->
+                    <select id="filter-level" onchange="loadJobs()" class="bg-brand-navy border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-teal transition">
+                        <option value="all">All Levels</option>
+                        <option value="Junior">Junior / Entry / Beginner</option>
+                        <option value="Intermediate">Intermediate / Mid</option>
+                        <option value="Senior">Senior / Lead</option>
+                    </select>
+
+                    <!-- Date Filter -->
+                    <select id="filter-date" onchange="loadJobs()" class="bg-brand-navy border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-teal transition">
+                        <option value="all">📅 All Dates</option>
+                        <option value="today">🔥 Today (Past 24h)</option>
+                        <option value="3days">⚡ Past 3 Days</option>
+                        <option value="7days">🗓️ Past 7 Days</option>
+                    </select>
+
+                    <!-- 100% Worldwide Only Toggle -->
+                    <label class="flex items-center space-x-2 bg-brand-navy px-3 py-2 rounded-xl border border-brand-border cursor-pointer select-none">
+                        <input type="checkbox" id="filter-worldwide" onchange="loadJobs()" checked class="rounded bg-brand-surface border-brand-border text-brand-teal focus:ring-0">
+                        <span class="text-white font-medium">🌍 Worldwide Remote Only</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Job Listings Grid -->
+            <div id="jobs-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Populated via JS -->
+            </div>
+
+            <!-- Empty / Loading State -->
+            <div id="jobs-empty" class="hidden text-center py-20 bg-brand-surface rounded-2xl border border-brand-border">
+                <div class="w-16 h-16 bg-brand-navy rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-border text-brand-teal">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-base font-bold text-white mb-1">No Matching Design Jobs Found</h3>
+                <p class="text-xs text-brand-textMuted mb-4">Try adjusting your keyword search or click "Scan Job Boards" to fetch new listings.</p>
+                <button onclick="triggerScan()" class="bg-brand-teal hover:bg-brand-tealHover text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Scan Job Boards Now</button>
+            </div>
+        </section>
+
+
+        <!-- 2. APPLICATION KANBAN PIPELINE TAB -->
+        <section id="tab-kanban" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold font-display text-white">Application Pipeline</h2>
+                    <p class="text-xs text-brand-textMuted">Track jobs from first discovery to final interview offer.</p>
+                </div>
+                <button onclick="openCustomJobModal()" class="bg-brand-surfaceHover hover:bg-brand-border border border-brand-border text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    + Add External Job
+                </button>
+            </div>
+
+            <!-- Kanban Board Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <!-- Bookmarked -->
+                <div class="bg-brand-surface rounded-2xl border border-brand-border p-4 kanban-column flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-sky-400"></span> Bookmarked
+                        </span>
+                        <span id="count-bookmarked" class="text-xs bg-brand-navy px-2 py-0.5 rounded-full border border-brand-border text-brand-textMuted">0</span>
+                    </div>
+                    <div id="col-bookmarked" class="space-y-3 flex-1 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Applied -->
+                <div class="bg-brand-surface rounded-2xl border border-brand-border p-4 kanban-column flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-brand-teal flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-brand-teal"></span> Applied
+                        </span>
+                        <span id="count-applied" class="text-xs bg-brand-navy px-2 py-0.5 rounded-full border border-brand-border text-brand-textMuted">0</span>
+                    </div>
+                    <div id="col-applied" class="space-y-3 flex-1 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Interviewing -->
+                <div class="bg-brand-surface rounded-2xl border border-brand-border p-4 kanban-column flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Interviewing
+                        </span>
+                        <span id="count-interviewing" class="text-xs bg-brand-navy px-2 py-0.5 rounded-full border border-brand-border text-brand-textMuted">0</span>
+                    </div>
+                    <div id="col-interviewing" class="space-y-3 flex-1 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Offer Received -->
+                <div class="bg-brand-surface rounded-2xl border border-brand-border p-4 kanban-column flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Offer Received 🏆
+                        </span>
+                        <span id="count-offer" class="text-xs bg-brand-navy px-2 py-0.5 rounded-full border border-brand-border text-brand-textMuted">0</span>
+                    </div>
+                    <div id="col-offer" class="space-y-3 flex-1 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Rejected / Inactive -->
+                <div class="bg-brand-surface rounded-2xl border border-brand-border p-4 kanban-column flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-rose-400"></span> Archived
+                        </span>
+                        <span id="count-rejected" class="text-xs bg-brand-navy px-2 py-0.5 rounded-full border border-brand-border text-brand-textMuted">0</span>
+                    </div>
+                    <div id="col-rejected" class="space-y-3 flex-1 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 3. PITCH STUDIO TAB -->
+        <section id="tab-studio" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+            <div class="bg-brand-surface p-6 rounded-2xl border border-brand-border shadow-2xl">
+                <div class="flex items-center justify-between border-b border-brand-border pb-4 mb-6">
+                    <div>
+                        <h2 class="text-base font-bold font-display text-white">Application Pitch Studio</h2>
+                        <p class="text-xs text-brand-textMuted">Generate instant customized proposals matching your specific case studies.</p>
+                    </div>
+                    <span class="text-xs bg-brand-coral/20 text-brand-coral border border-brand-coral/30 px-3 py-1 rounded-full font-medium">
+                        Balogun Olamide Voice Profile
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-medium text-brand-textMuted mb-1">Target Track</label>
+                        <select id="studio-category" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
+                            <option value="uiux">UI/UX & Product Design (ektós + Hindsight)</option>
+                            <option value="graphic">Graphic Design & Motion (Tratun + CareerPaddy)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-brand-textMuted mb-1">Company / Startup Name</label>
+                        <input type="text" id="studio-company" placeholder="e.g. Acme Studio / TechCrush" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-brand-textMuted mb-1">Role Title</label>
+                        <input type="text" id="studio-role" placeholder="e.g. Junior UI/UX Designer" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
+                    </div>
+                </div>
+
+                <div class="flex justify-end mb-4">
+                    <button onclick="generateStudioPitch()" class="bg-brand-teal hover:bg-brand-tealHover text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Generate Tailored Pitch
+                    </button>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-brand-textMuted mb-1">Email / Proposal Subject Line</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="studio-output-subject" readonly class="flex-1 bg-brand-navy border border-brand-border rounded-xl px-3 py-2 text-xs text-white">
+                            <button onclick="copySubject()" class="bg-brand-surfaceHover hover:bg-brand-border px-3 py-2 rounded-xl text-xs text-white border border-brand-border">Copy</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-medium text-brand-textMuted">Proposal / Pitch Body</label>
+                            <button onclick="copyBody()" id="btn-copy-body" class="text-xs text-brand-teal hover:text-emerald-400 font-medium flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                                Copy Entire Pitch
+                            </button>
+                        </div>
+                        <textarea id="studio-output-body" rows="14" class="w-full bg-brand-navy border border-brand-border rounded-xl p-4 text-xs font-mono text-slate-200 leading-relaxed focus:outline-none focus:border-brand-teal"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 4. TELEGRAM & AUTOMATION SETTINGS TAB -->
+        <section id="tab-settings" class="tab-content hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-brand-surface p-6 rounded-2xl border border-brand-border shadow-2xl space-y-6">
+                <div>
+                    <h2 class="text-base font-bold font-display text-white">Telegram Real-Time Alerts</h2>
+                    <p class="text-xs text-brand-textMuted">Receive instant notifications on your phone the second a matching remote design job drops.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-brand-navy border border-brand-border text-xs space-y-2 text-brand-textMuted">
+                    <p class="font-semibold text-white">How to connect Telegram in 30 seconds:</p>
+                    <ol class="list-decimal list-inside space-y-1">
+                        <li>Open Telegram and search for <b class="text-brand-teal">@BotFather</b>.</li>
+                        <li>Send <code class="text-emerald-400 bg-brand-surface px-1 py-0.5 rounded">/newbot</code> and follow prompts to get your <b>Bot Token</b>.</li>
+                        <li>Message <b class="text-brand-teal">@userinfobot</b> on Telegram to see your numeric <b>Chat ID</b>.</li>
+                        <li>Paste both below and click <b>Send Test Alert</b>!</li>
+                    </ol>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-brand-textMuted mb-1">Telegram Bot Token</label>
+                        <input type="password" id="settings-token" placeholder="e.g. 7123456789:AAFq_example_token" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-brand-textMuted mb-1">Telegram Chat ID</label>
+                        <input type="text" id="settings-chatid" placeholder="e.g. 123456789" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between border-t border-brand-border pt-4">
+                    <button onclick="testTelegram()" id="btn-test-tg" class="bg-brand-surfaceHover hover:bg-brand-border border border-brand-border text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                        <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                        Send Test Notification
+                    </button>
+                    <button onclick="saveSettings()" class="bg-brand-teal hover:bg-brand-tealHover text-white text-xs font-semibold px-6 py-2.5 rounded-xl shadow-lg transition">
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PITCH GENERATOR MODAL -->
+    <div id="pitch-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-brand-surface border border-brand-border rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-brand-border pb-3">
+                <div>
+                    <h3 class="text-sm font-bold font-display text-white flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-brand-teal"></span> Tailored Application Pitch
+                    </h3>
+                    <p id="modal-subtitle" class="text-xs text-brand-textMuted">Role & Company</p>
+                </div>
+                <button onclick="closePitchModal()" class="text-brand-textMuted hover:text-white text-lg font-bold p-1">✕</button>
+            </div>
+
+            <div class="space-y-3 flex-1 overflow-y-auto">
+                <!-- Direct Apply Bypass Toolkit -->
+                <div class="bg-brand-navy p-3.5 rounded-xl border border-brand-border space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                            🔓 100% Free Direct Apply & Contact Toolkit
+                        </span>
+                        <span class="text-[10px] text-brand-textMuted bg-brand-surface px-2 py-0.5 rounded border border-brand-border">
+                            No Paywalls · Zero Intermediaries
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <a id="btn-search-ats" href="#" target="_blank" class="bg-brand-surface hover:bg-brand-surfaceHover border border-brand-border text-slate-200 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
+                            🔍 Find Direct ATS (Greenhouse/Lever)
+                        </a>
+                        <a id="btn-search-linkedin" href="#" target="_blank" class="bg-brand-surface hover:bg-brand-surfaceHover border border-brand-border text-sky-400 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
+                            👔 Find Design Lead on LinkedIn
+                        </a>
+                        <a id="btn-open-email" href="#" class="bg-brand-teal/20 hover:bg-brand-teal/30 border border-brand-teal/40 text-emerald-300 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
+                            ✉️ Send Direct Email (mailto)
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-brand-textMuted mb-1">Email / Proposal Subject Line</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="modal-subject" readonly class="flex-1 bg-brand-navy border border-brand-border rounded-xl px-3 py-1.5 text-xs text-white">
+                        <button onclick="copyModalSubject()" class="bg-brand-surfaceHover hover:bg-brand-border px-3 py-1.5 rounded-xl text-xs text-white border border-brand-border">Copy</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-brand-textMuted mb-1">Pitch Message (In Balogun's Voice)</label>
+                    <textarea id="modal-body" rows="11" class="w-full bg-brand-navy border border-brand-border rounded-xl p-3 text-xs font-mono text-slate-200 leading-relaxed focus:outline-none focus:border-brand-teal"></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-brand-border pt-3">
+                <button onclick="trackFromModal()" id="btn-modal-track" class="bg-brand-surfaceHover hover:bg-brand-border text-white text-xs font-medium px-4 py-2 rounded-xl border border-brand-border flex items-center gap-2">
+                    📌 Save to Application Pipeline
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="copyModalBodyOnly()" class="bg-brand-surfaceHover hover:bg-brand-border text-white text-xs font-medium px-4 py-2 rounded-xl border border-brand-border">
+                        📋 Copy Text
+                    </button>
+                    <button onclick="copyModalBody()" id="btn-modal-copy" class="bg-brand-teal hover:bg-brand-tealHover text-white text-xs font-semibold px-5 py-2 rounded-xl shadow transition flex items-center gap-1.5">
+                        ⚡ Copy Pitch & Open Direct Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let allJobs = [];
+        let allApps = [];
+        let currentModalJob = null;
+        let searchTimeout = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadJobs();
+            loadApplications();
+            loadSettings();
+        });
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-teal', 'text-white', 'shadow');
+                btn.classList.add('text-brand-textMuted');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            activeBtn.classList.add('bg-brand-teal', 'text-white', 'shadow');
+            activeBtn.classList.remove('text-brand-textMuted');
+
+            if (tabId === 'kanban') loadApplications();
+        }
+
+        // Fetch & Render Jobs
+        async function loadJobs() {
+            const search = document.getElementById('search-input').value;
+            const category = document.getElementById('filter-category').value;
+            const level = document.getElementById('filter-level').value;
+            const dateFilter = document.getElementById('filter-date').value;
+            const worldwideOnly = document.getElementById('filter-worldwide').checked;
+
+            const url = `/api/jobs?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&level=${encodeURIComponent(level)}&date_filter=${encodeURIComponent(dateFilter)}&worldwide_only=${worldwideOnly}`;
+            
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                allJobs = data.jobs || [];
+                document.getElementById('total-jobs-badge').innerText = allJobs.length;
+                renderJobsGrid(allJobs);
+            } catch (err) {
+                console.error("Failed to load jobs", err);
+            }
+        }
+
+        function debounceLoadJobs() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadJobs, 300);
+        }
+
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return "Recent";
+            const today = new Date().toISOString().slice(0, 10);
+            const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+            if (dateStr.startsWith(today)) {
+                return { label: "🔥 Today", date: dateStr, isToday: true };
+            } else if (dateStr.startsWith(yesterday)) {
+                return { label: "📅 Yesterday", date: dateStr, isYesterday: true };
+            } else {
+                try {
+                    const d = new Date(dateStr);
+                    const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    return { label: `🗓️ ${formatted}`, date: dateStr };
+                } catch {
+                    return { label: `🗓️ ${dateStr}`, date: dateStr };
+                }
+            }
+        }
+
+        function renderJobsGrid(jobs) {
+            const container = document.getElementById('jobs-container');
+            const empty = document.getElementById('jobs-empty');
+
+            if (!jobs || jobs.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            // Group jobs by date_posted
+            const grouped = {};
+            jobs.forEach(job => {
+                const d = (job.date_posted || 'Recent').slice(0, 10);
+                if (!grouped[d]) grouped[d] = [];
+                grouped[d].push(job);
+            });
+
+            // Sort dates descending
+            const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+            let html = '';
+
+            sortedDates.forEach(dateKey => {
+                const dayJobs = grouped[dateKey];
+                const dateInfo = formatDisplayDate(dateKey);
+                const headerColor = dateInfo.isToday ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-sky-400 border-sky-500/30 bg-sky-500/10';
+
+                html += `
+                <div class="col-span-full mt-4 mb-2">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold font-display uppercase tracking-wider px-3 py-1 rounded-xl border ${headerColor} flex items-center gap-2">
+                            ${dateInfo.label}
+                        </span>
+                        <span class="text-xs text-brand-textMuted bg-brand-navy border border-brand-border px-2.5 py-0.5 rounded-full">
+                            ${dayJobs.length} ${dayJobs.length === 1 ? 'role' : 'roles'} posted
+                        </span>
+                        <div class="flex-1 h-[1px] bg-brand-border"></div>
+                    </div>
+                </div>
+                `;
+
+                dayJobs.forEach(job => {
+                    const isUIUX = job.category.includes('UI/UX');
+                    const catBadgeClass = isUIUX ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-brand-coral/10 text-brand-coral border-brand-coral/20';
+                    const levelBadgeClass = job.level.includes('Junior') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+                    const isReddit = job.source.toLowerCase().includes('reddit');
+                    const sourceBadgeClass = isReddit ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-brand-navy text-brand-textMuted border-brand-border';
+
+                    html += `
+                    <div class="bg-brand-surface rounded-2xl border border-brand-border p-5 hover:border-brand-teal/50 transition duration-200 flex flex-col justify-between group shadow-lg">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2.5">
+                                <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border ${catBadgeClass}">
+                                    ${job.category}
+                                </span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-md border ${sourceBadgeClass} font-medium">
+                                    ${job.source}
+                                </span>
+                            </div>
+
+                            <h3 class="text-sm font-bold font-display text-white group-hover:text-brand-teal transition line-clamp-2 mb-1" title="${job.title}">
+                                ${job.title}
+                            </h3>
+                            <p class="text-xs font-medium text-emerald-400 mb-3">${job.company}</p>
+
+                            <div class="flex flex-wrap gap-1.5 mb-3 text-[11px]">
+                                <span class="px-2 py-0.5 rounded-md bg-brand-navy border border-brand-border text-brand-textMuted flex items-center gap-1">
+                                    📍 ${job.location}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-md border ${levelBadgeClass}">
+                                    ${job.level}
+                                </span>
+                                ${job.salary ? `<span class="px-2 py-0.5 rounded-md bg-brand-navy border border-brand-border text-amber-300 font-medium">💰 ${job.salary}</span>` : ''}
+                            </div>
+
+                            <p class="text-xs text-brand-textMuted line-clamp-3 leading-relaxed mb-4">
+                                ${job.description || 'Click to view complete role overview and apply.'}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-3 border-t border-brand-border">
+                            <button onclick="openPitchModal(${job.id})" class="flex-1 bg-brand-teal hover:bg-brand-tealHover text-white text-xs font-semibold py-2 rounded-xl transition shadow flex items-center justify-center gap-1.5">
+                                ⚡ Pitch
+                            </button>
+                            <button onclick="quickTrackJob(${job.id})" title="Add to Application Tracker" class="bg-brand-surfaceHover hover:bg-brand-border text-white text-xs font-medium px-3 py-2 rounded-xl border border-brand-border transition">
+                                📌 Track
+                            </button>
+                            <a href="${job.url}" target="_blank" class="bg-brand-surfaceHover hover:bg-brand-border text-brand-textMuted hover:text-white text-xs font-medium px-3 py-2 rounded-xl border border-brand-border transition flex items-center gap-1">
+                                🔗 ${isReddit ? 'DM / View' : 'Apply'}
+                            </a>
+                        </div>
+                    </div>
+                    `;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Trigger Live Scan
+        async function triggerScan() {
+            const btn = document.getElementById('btn-scan');
+            const spinner = document.getElementById('scan-spinner');
+            const icon = document.getElementById('scan-icon');
+
+            spinner.classList.remove('hidden');
+            icon.classList.add('hidden');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/scan', { method: 'POST' });
+                const data = await res.json();
+                await loadJobs();
+                alert(`Scan complete! Found and saved ${data.results.total_new} new design opportunities.`);
+            } catch (err) {
+                alert("Failed to scan job boards. Check internet connection.");
+            } finally {
+                spinner.classList.add('hidden');
+                icon.classList.remove('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        // Pitch Modal Logic
+        async function openPitchModal(jobId) {
+            const job = allJobs.find(j => j.id === jobId);
+            if (!job) return;
+            currentModalJob = job;
+
+            document.getElementById('modal-subtitle').innerText = `${job.title} at ${job.company}`;
+
+            const res = await fetch('/api/generate-pitch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    company: job.company,
+                    role: job.title,
+                    category: job.category
+                })
+            });
+            const pitch = await res.json();
+
+            document.getElementById('modal-subject').value = pitch.subject;
+            document.getElementById('modal-body').value = pitch.body;
+
+            // Generate 100% Free Direct ATS & Bypass Links
+            const cleanCompany = job.company.replace(/Reddit client \(@.*?\)/i, '').replace(/Reddit \(r\/.*?\)/i, '').trim() || job.company;
+            const cleanTitle = job.title.replace(/\[hiring\]/gi, '').trim();
+
+            // 1. Google Direct ATS query
+            const atsQuery = encodeURIComponent(`"${cleanCompany}" "${cleanTitle}" (careers OR site:greenhouse.io OR site:lever.co OR site:ashbyhq.com OR site:workable.com)`);
+            document.getElementById('btn-search-ats').href = `https://www.google.com/search?q=${atsQuery}`;
+
+            // 2. LinkedIn People search query
+            const liQuery = encodeURIComponent(`${cleanCompany} design lead OR recruiter OR founder OR hiring`);
+            document.getElementById('btn-search-linkedin').href = `https://www.linkedin.com/search/results/people/?keywords=${liQuery}`;
+
+            // 3. Direct Email Mailto
+            const companySlug = cleanCompany.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const targetEmail = companySlug ? `careers@${companySlug}.com` : 'careers@company.com';
+            const mailtoSubject = encodeURIComponent(pitch.subject);
+            const mailtoBody = encodeURIComponent(pitch.body);
+            document.getElementById('btn-open-email').href = `mailto:${targetEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
+
+            document.getElementById('pitch-modal').classList.remove('hidden');
+        }
+
+        function closePitchModal() {
+            document.getElementById('pitch-modal').classList.add('hidden');
+        }
+
+        function copyModalSubject() {
+            const val = document.getElementById('modal-subject').value;
+            navigator.clipboard.writeText(val);
+            alert("Subject copied to clipboard!");
+        }
+
+        function copyModalBodyOnly() {
+            const val = document.getElementById('modal-body').value;
+            navigator.clipboard.writeText(val);
+            alert("Pitch letter copied to clipboard!");
+        }
+
+        function copyModalBody() {
+            const val = document.getElementById('modal-body').value;
+            navigator.clipboard.writeText(val);
+            
+            // Open direct ATS search link if not a reddit link
+            if (currentModalJob) {
+                if (currentModalJob.source.toLowerCase().includes('reddit')) {
+                    window.open(currentModalJob.url, '_blank');
+                } else {
+                    const cleanCompany = currentModalJob.company.trim();
+                    const cleanTitle = currentModalJob.title.trim();
+                    const atsQuery = encodeURIComponent(`"${cleanCompany}" "${cleanTitle}" (careers OR site:greenhouse.io OR site:lever.co OR site:ashbyhq.com OR site:workable.com)`);
+                    window.open(`https://www.google.com/search?q=${atsQuery}`, '_blank');
+                }
+            }
+            alert("Pitch copied! Opening direct company search...");
+        }
+
+        async function trackFromModal() {
+            if (!currentModalJob) return;
+            await quickTrackJob(currentModalJob.id);
+            closePitchModal();
+        }
+
+        // Quick Track Job into Kanban
+        async function quickTrackJob(jobId) {
+            const job = allJobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            const res = await fetch('/api/applications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    job_id: job.id,
+                    company: job.company,
+                    title: job.title,
+                    url: job.url,
+                    salary: job.salary,
+                    status: 'applied',
+                    category: job.category
+                })
+            });
+            await loadApplications();
+            await loadJobs(); // Instantly removes the job from Live Jobs feed!
+            alert(`Moved "${job.title}" at ${job.company} to your Application Pipeline!`);
+        }
+
+        // Kanban Pipeline Loader
+        async function loadApplications() {
+            try {
+                const res = await fetch('/api/applications');
+                const data = await res.json();
+                allApps = data.applications || [];
+                document.getElementById('total-apps-badge').innerText = allApps.length;
+                renderKanban(allApps);
+            } catch (err) {
+                console.error("Failed to load applications", err);
+            }
+        }
+
+        function renderKanban(apps) {
+            const columns = {
+                bookmarked: document.getElementById('col-bookmarked'),
+                applied: document.getElementById('col-applied'),
+                interviewing: document.getElementById('col-interviewing'),
+                offer: document.getElementById('col-offer'),
+                rejected: document.getElementById('col-rejected')
+            };
+
+            const counts = { bookmarked: 0, applied: 0, interviewing: 0, offer: 0, rejected: 0 };
+
+            Object.values(columns).forEach(col => col.innerHTML = '');
+
+            apps.forEach(app => {
+                const status = app.status || 'bookmarked';
+                if (counts[status] !== undefined) counts[status]++;
+
+                const targetCol = columns[status] || columns.bookmarked;
+                
+                const card = document.createElement('div');
+                card.className = "bg-brand-navy rounded-xl p-3 border border-brand-border text-xs space-y-2 hover:border-brand-teal/50 transition";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-white line-clamp-1">${app.title}</span>
+                        <button onclick="deleteApp(${app.id})" class="text-brand-textMuted hover:text-rose-400 text-xs">✕</button>
+                    </div>
+                    <p class="text-emerald-400 font-medium">${app.company}</p>
+                    <div class="text-[10px] text-brand-textMuted flex items-center justify-between">
+                        <span>📅 ${app.applied_at || 'Recently'}</span>
+                        ${app.url ? `<a href="${app.url}" target="_blank" class="text-brand-teal hover:underline">Apply Link ↗</a>` : ''}
+                    </div>
+                    <div class="pt-2 border-t border-brand-border flex items-center justify-between">
+                        <select onchange="updateAppStatus(${app.id}, this.value)" class="bg-brand-surface border border-brand-border rounded-lg px-2 py-1 text-[10px] text-white focus:outline-none">
+                            <option value="bookmarked" ${status==='bookmarked'?'selected':''}>📥 Bookmarked</option>
+                            <option value="applied" ${status==='applied'?'selected':''}>🚀 Applied</option>
+                            <option value="interviewing" ${status==='interviewing'?'selected':''}>💬 Interview</option>
+                            <option value="offer" ${status==='offer'?'selected':''}>🏆 Offer</option>
+                            <option value="rejected" ${status==='rejected'?'selected':''}>📁 Archived</option>
+                        </select>
+                    </div>
+                `;
+                targetCol.appendChild(card);
+            });
+
+            document.getElementById('count-bookmarked').innerText = counts.bookmarked;
+            document.getElementById('count-applied').innerText = counts.applied;
+            document.getElementById('count-interviewing').innerText = counts.interviewing;
+            document.getElementById('count-offer').innerText = counts.offer;
+            document.getElementById('count-rejected').innerText = counts.rejected;
+        }
+
+        async function updateAppStatus(appId, newStatus) {
+            await fetch(`/api/applications/${appId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            loadApplications();
+        }
+
+        async function deleteApp(appId) {
+            if (!confirm("Remove this application?")) return;
+            await fetch(`/api/applications/${appId}`, { method: 'DELETE' });
+            await loadApplications();
+            await loadJobs();
+        }
+
+        // Pitch Studio
+        async function generateStudioPitch() {
+            const category = document.getElementById('studio-category').value;
+            const company = document.getElementById('studio-company').value || '[Company Name]';
+            const role = document.getElementById('studio-role').value || '[Job Title]';
+
+            const res = await fetch('/api/generate-pitch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ company, role, category })
+            });
+            const pitch = await res.json();
+            document.getElementById('studio-output-subject').value = pitch.subject;
+            document.getElementById('studio-output-body').value = pitch.body;
+        }
+
+        function copySubject() {
+            navigator.clipboard.writeText(document.getElementById('studio-output-subject').value);
+            alert("Subject copied!");
+        }
+
+        function copyBody() {
+            navigator.clipboard.writeText(document.getElementById('studio-output-body').value);
+            alert("Pitch letter copied to clipboard!");
+        }
+
+        // Settings & Telegram
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                document.getElementById('settings-token').value = settings.telegram_token || '';
+                document.getElementById('settings-chatid').value = settings.telegram_chat_id || '';
+            } catch (err) {}
+        }
+
+        async function saveSettings() {
+            const token = document.getElementById('settings-token').value;
+            const chat_id = document.getElementById('settings-chatid').value;
+
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegram_token: token,
+                    telegram_chat_id: chat_id
+                })
+            });
+            alert("Settings saved successfully!");
+        }
+
+        async function testTelegram() {
+            await saveSettings();
+            const res = await fetch('/api/telegram/test', { method: 'POST' });
+            const data = await res.json();
+            alert(data.message);
+        }
+    </script>
+</body>
+</html>
