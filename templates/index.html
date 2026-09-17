@@ -334,6 +334,16 @@
                         <label class="block text-xs font-medium text-brand-textMuted mb-1">Telegram Chat ID</label>
                         <input type="text" id="settings-chatid" placeholder="e.g. 123456789" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
                     </div>
+
+                    <div class="pt-3 border-t border-brand-border">
+                        <label class="block text-xs font-medium text-brand-teal mb-1 flex items-center gap-1.5">
+                            <span>📢</span> Monitored Public Channels (Telegram & Social) for Internships & Gigs
+                        </label>
+                        <input type="text" id="settings-channels" placeholder="e.g. remoteinternships, techjobs_africa, entrylevelremote, designjobsng" class="w-full bg-brand-navy border border-brand-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-teal">
+                        <p class="text-[11px] text-brand-textMuted mt-1 leading-relaxed">
+                            Enter public Telegram channel usernames separated by commas. The system monitors the newest posts and extracts design internships, apprenticeships, and freelance flyer circulars automatically!
+                        </p>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-between border-t border-brand-border pt-4">
@@ -838,22 +848,25 @@
                 const settings = await res.json();
                 document.getElementById('settings-token').value = settings.telegram_token || '';
                 document.getElementById('settings-chatid').value = settings.telegram_chat_id || '';
+                document.getElementById('settings-channels').value = settings.monitored_telegram_channels || 'remoteinternships, techjobs_africa, entrylevelremote, designjobsng';
             } catch (err) {}
         }
 
         async function saveSettings() {
             const token = document.getElementById('settings-token').value;
             const chat_id = document.getElementById('settings-chatid').value;
+            const channels = document.getElementById('settings-channels').value;
 
             await fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     telegram_token: token,
-                    telegram_chat_id: chat_id
+                    telegram_chat_id: chat_id,
+                    monitored_telegram_channels: channels
                 })
             });
-            alert("Settings saved successfully!");
+            alert("Configuration & channel sources saved successfully!");
         }
 
         async function testTelegram() {

@@ -87,6 +87,7 @@ class SettingsUpdate(BaseModel):
     telegram_enabled: Optional[str] = None
     filter_category: Optional[str] = None
     filter_worldwide_only: Optional[str] = None
+    monitored_telegram_channels: Optional[str] = None
 
 # Routes
 @app.get("/", response_class=HTMLResponse)

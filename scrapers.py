@@ -328,15 +328,150 @@ def fetch_himalayas_jobs() -> int:
         print(f"Error fetching Himalayas: {e}")
     return count
 
+def fetch_telegram_channel_jobs() -> int:
+    """Fetch recent design & intern posts from public Telegram channels (t.me/s/)"""
+    count = 0
+    try:
+        from database import get_settings
+        settings = get_settings()
+        custom_channels_str = settings.get("monitored_telegram_channels", "")
+        if custom_channels_str.strip():
+            channels = [c.strip().lstrip("@") for c in custom_channels_str.split(",") if c.strip()]
+        else:
+            channels = ["remoteinternships", "entrylevelremote", "techjobs_africa", "designjobsng"]
+            
+        for ch in channels:
+            url = f"https://t.me/s/{ch}"
+            try:
+                r = requests.get(url, headers=HEADERS, timeout=10)
+                if r.status_code == 200:
+                    soup = BeautifulSoup(r.text, "html.parser")
+                    messages = soup.select(".tgme_widget_message")
+                    for msg in messages:
+                        text_el = msg.select_one(".tgme_widget_message_text")
+                        if not text_el:
+                            continue
+                        full_text = clean_html(str(text_el))
+                        text_lower = full_text.lower()
+                        
+                        # Filter for design / creative roles
+                        has_design = any(kw in text_lower for kw in [
+                            "graphic", "ui/ux", "ui / ux", "ux/ui", "product design", "figma", 
+                            "photoshop", "illustrator", "visual design", "brand design",
+                            "creative intern", "design intern", "junior designer", "thumbnail",
+                            "canva", "creative assistant"
+                        ])
+                        if not has_design:
+                            continue
+                            
+                        link_tag = text_el.find("a", href=True)
+                        post_id_link = msg.select_one(".tgme_widget_message_date")
+                        external_id = msg.get("data-post", f"{ch}_{hash(full_text[:50])}")
+                        
+                        if link_tag and link_tag["href"].startswith("http"):
+                            url_link = link_tag["href"]
+                        elif post_id_link and post_id_link.get("href"):
+                            url_link = post_id_link["href"]
+                        else:
+                            url_link = f"https://t.me/{ch}"
+                            
+                        lines = [line.strip() for line in full_text.splitlines() if line.strip()]
+                        title = lines[0][:90] if lines else "Design Internship / Role"
+                        
+                        salary_match = re.search(r'(\$\d+[\d,]*\s*(?:-\s*\$?\d+[\d,]*)?|\b\d+k\b|₦[\d,]+|\bpaid\b|\bstipend\b|\bcompetitive\b)', full_text, re.IGNORECASE)
+                        salary = salary_match.group(1) if salary_match else "See Telegram Post"
+                        
+                        classification = classify_job(title, full_text)
+                        if any(kw in text_lower for kw in ["intern", "internship", "junior", "entry", "beginner", "apprentice"]):
+                            classification["level"] = "Junior / Entry"
+                            
+                        saved = save_job({
+                            "source": f"Telegram (@{ch})",
+                            "external_id": f"tg_{external_id}",
+                            "title": title,
+                            "company": f"Telegram (@{ch})",
+                            "location": "Remote (Worldwide / Telegram)",
+                            "url": url_link,
+                            "description": full_text[:1200],
+                            "category": classification["category"],
+                            "level": classification["level"],
+                            "salary": salary,
+                            "is_worldwide": True,
+                            "date_posted": datetime.utcnow().strftime("%Y-%m-%d")
+                        })
+                        if saved:
+                            count += 1
+            except Exception as e:
+                print(f"Error fetching Telegram channel @{ch}: {e}")
+    except Exception as e:
+        print(f"Error in fetch_telegram_channel_jobs: {e}")
+    return count
+
+def fetch_twitter_design_jobs() -> int:
+    """Fetch recent hiring tweets from open Nitter mirrors / RSS feeds"""
+    count = 0
+    nitter_instances = [
+        "https://nitter.privacydev.net",
+        "https://nitter.poast.org",
+        "https://nitter.lucabased.xyz"
+    ]
+    query = "hiring (graphic designer OR ui/ux OR design intern) remote"
+    
+    for instance in nitter_instances:
+        try:
+            url = f"{instance}/search/rss?f=tweets&q={requests.utils.quote(query)}"
+            r = requests.get(url, headers=HEADERS, timeout=8)
+            if r.status_code == 200:
+                feed = feedparser.parse(r.text)
+                if feed.entries:
+                    for entry in feed.entries[:10]:
+                        title = clean_html(entry.get("title", ""))
+                        link = entry.get("link", "").replace(instance, "https://x.com")
+                        desc = clean_html(entry.get("summary", ""))
+                        author = entry.get("author", "X User")
+                        
+                        if not is_design_role(title, desc):
+                            continue
+                            
+                        classification = classify_job(title, desc)
+                        if any(kw in f"{title} {desc}".lower() for kw in ["intern", "internship", "junior", "beginner"]):
+                            classification["level"] = "Junior / Entry"
+                            
+                        saved = save_job({
+                            "source": "X / Twitter",
+                            "external_id": f"x_{entry.get('id', link)}",
+                            "title": title[:90],
+                            "company": f"X (@{author.lstrip('@')})",
+                            "location": "Remote (DM Client on X)",
+                            "url": link,
+                            "description": desc[:1200],
+                            "category": classification["category"],
+                            "level": classification["level"],
+                            "salary": "DM on X for Details",
+                            "is_worldwide": True,
+                            "date_posted": datetime.utcnow().strftime("%Y-%m-%d")
+                        })
+                        if saved:
+                            count += 1
+                    break
+        except Exception as e:
+            continue
+            
+    return count
+
 def run_all_scrapers() -> Dict[str, int]:
-    """Run all 100% free-to-apply sources (Reddit, WWR, Remotive, Himalayas)"""
+    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas"""
+    telegram_count = fetch_telegram_channel_jobs()
     reddit_count = fetch_reddit_design_jobs()
+    twitter_count = fetch_twitter_design_jobs()
     remotive_count = fetch_remotive_jobs()
     wwr_count = fetch_weworkremotely_jobs()
     himalayas_count = fetch_himalayas_jobs()
-    total_new = reddit_count + remotive_count + wwr_count + himalayas_count
+    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count
     return {
+        "telegram": telegram_count,
         "reddit": reddit_count,
+        "twitter": twitter_count,
         "remotive": remotive_count,
         "weworkremotely": wwr_count,
         "himalayas": himalayas_count,
