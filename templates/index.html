@@ -551,7 +551,12 @@
                     const catBadgeClass = isUIUX ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-brand-coral/10 text-brand-coral border-brand-coral/20';
                     const levelBadgeClass = job.level.includes('Junior') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20';
                     const isReddit = job.source.toLowerCase().includes('reddit');
-                    const sourceBadgeClass = isReddit ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-brand-navy text-brand-textMuted border-brand-border';
+                    const isJobberman = job.source.toLowerCase().includes('jobberman');
+                    const sourceBadgeClass = isReddit 
+                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                        : isJobberman 
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+                        : 'bg-brand-navy text-brand-textMuted border-brand-border';
 
                     html += `
                     <div class="bg-brand-surface rounded-2xl border border-brand-border p-5 hover:border-brand-teal/50 transition duration-200 flex flex-col justify-between group shadow-lg">
@@ -694,7 +699,7 @@
             
             // Open direct ATS search link if not a reddit link
             if (currentModalJob) {
-                if (currentModalJob.source.toLowerCase().includes('reddit')) {
+                if (currentModalJob.source.toLowerCase().includes('reddit') || currentModalJob.source.toLowerCase().includes('jobberman')) {
                     window.open(currentModalJob.url, '_blank');
                 } else {
                     const cleanCompany = currentModalJob.company.trim();

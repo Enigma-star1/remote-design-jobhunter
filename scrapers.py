@@ -2,7 +2,7 @@ import re
 import requests
 import feedparser
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from database import save_job
 
@@ -459,15 +459,141 @@ def fetch_twitter_design_jobs() -> int:
             
     return count
 
+def parse_jobberman_date(date_str: str) -> str:
+    now = datetime.utcnow()
+    date_str_l = date_str.lower().strip()
+    if "hour" in date_str_l or "minute" in date_str_l or "today" in date_str_l or "just now" in date_str_l:
+        return now.strftime("%Y-%m-%d")
+    elif "yesterday" in date_str_l:
+        return (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    match = re.search(r'(\d+)\s+(day|week|month)', date_str_l)
+    if match:
+        num = int(match.group(1))
+        unit = match.group(2)
+        if unit == "day":
+            return (now - timedelta(days=num)).strftime("%Y-%m-%d")
+        elif unit == "week":
+            return (now - timedelta(weeks=num)).strftime("%Y-%m-%d")
+        elif unit == "month":
+            return (now - timedelta(days=num*30)).strftime("%Y-%m-%d")
+    return now.strftime("%Y-%m-%d")
+
+def fetch_jobberman_jobs() -> int:
+    """Jobberman Nigeria: Direct job applications for creative, UI/UX & graphic design roles"""
+    count = 0
+    queries = ["design", "graphic+designer", "ui%2Fux", "product+designer", "creative+designer"]
+    seen_urls = set()
+    
+    for q in queries:
+        try:
+            url = f"https://www.jobberman.com/jobs?q={q}"
+            r = requests.get(url, headers=HEADERS, timeout=12)
+            if r.status_code != 200:
+                continue
+                
+            soup = BeautifulSoup(r.text, "html.parser")
+            cards = soup.select("[data-cy='listing-cards-components']")
+            
+            for card in cards:
+                title_a = card.select_one("a[data-cy='listing-title-link']") or card.find("a", href=lambda h: h and "/listings/" in h)
+                if not title_a:
+                    continue
+                    
+                title = title_a.get_text(strip=True)
+                job_url = title_a.get("href", "")
+                if not job_url:
+                    continue
+                if not job_url.startswith("http"):
+                    job_url = f"https://www.jobberman.com{job_url}"
+                    
+                if job_url in seen_urls:
+                    continue
+                seen_urls.add(job_url)
+                
+                slug = job_url.rstrip("/").split("/")[-1]
+                external_id = f"jobberman_{slug}"
+                
+                # Description
+                desc_el = card.find("p", class_=lambda c: c and ("md:text-gray-500" in c or "md:pl-5" in c))
+                desc = desc_el.get_text(strip=True) if desc_el else ""
+                if not desc:
+                    paras = [p.get_text(strip=True) for p in card.find_all("p") if p.get_text(strip=True)]
+                    if paras:
+                        desc = max(paras, key=len)
+                
+                # Strict filter for design roles
+                if not is_design_role(title, desc):
+                    continue
+                    
+                # Company
+                company_a = card.find("a", href=lambda h: h and "/company/" in h)
+                if company_a:
+                    company = company_a.get_text(strip=True)
+                else:
+                    comp_p = card.find("p", class_=lambda c: c and "text-blue-700" in c)
+                    company = comp_p.get_text(strip=True) if comp_p else "Jobberman Employer"
+                if not company or company == title:
+                    company = "Jobberman Employer"
+                    
+                # Badges / metadata: location, salary, job type
+                badges = [s.get_text(strip=True) for s in card.select(".bg-brand-secondary-100") if s.get_text(strip=True)]
+                
+                location = "Nigeria"
+                salary = "Disclosed on Apply"
+                
+                for b in badges:
+                    b_lower = b.lower()
+                    if any(loc_kw in b_lower for loc_kw in ["remote", "work from home", "lagos", "abuja", "nigeria", "hybrid", "port harcourt", "ibadan"]):
+                        location = b
+                    elif any(sal_kw in b_lower for sal_kw in ["ngn", "₦", "confidential", "k -", "k/"]):
+                        salary = b if b.lower() != "confidential" else "Disclosed on Apply"
+                        
+                # Date posted
+                date_p = card.find("p", string=lambda s: s and ("ago" in s.lower() or "today" in s.lower() or "yesterday" in s.lower()))
+                if not date_p:
+                    date_p = card.select_one("div.ml-auto p")
+                date_str = parse_jobberman_date(date_p.get_text(strip=True)) if date_p else datetime.utcnow().strftime("%Y-%m-%d")
+                
+                classification = classify_job(title, desc)
+                
+                loc_lower = location.lower()
+                is_remote = "remote" in loc_lower or "work from home" in loc_lower
+                if is_remote:
+                    loc_display = location if location.lower().startswith("remote") else f"Remote ({location})"
+                else:
+                    loc_display = f"{location} (Nigeria)"
+                    
+                saved = save_job({
+                    "source": "Jobberman (Nigeria)",
+                    "external_id": external_id,
+                    "title": title,
+                    "company": company,
+                    "location": loc_display,
+                    "url": job_url,
+                    "description": desc[:1200],
+                    "category": classification["category"],
+                    "level": classification["level"],
+                    "salary": salary,
+                    "is_worldwide": is_remote or is_worldwide_location(location),
+                    "date_posted": date_str
+                })
+                if saved:
+                    count += 1
+        except Exception as e:
+            print(f"Error fetching Jobberman query {q}: {e}")
+            
+    return count
+
 def run_all_scrapers() -> Dict[str, int]:
-    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas"""
+    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas, Jobberman"""
     telegram_count = fetch_telegram_channel_jobs()
     reddit_count = fetch_reddit_design_jobs()
     twitter_count = fetch_twitter_design_jobs()
     remotive_count = fetch_remotive_jobs()
     wwr_count = fetch_weworkremotely_jobs()
     himalayas_count = fetch_himalayas_jobs()
-    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count
+    jobberman_count = fetch_jobberman_jobs()
+    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count + jobberman_count
     return {
         "telegram": telegram_count,
         "reddit": reddit_count,
@@ -475,5 +601,7 @@ def run_all_scrapers() -> Dict[str, int]:
         "remotive": remotive_count,
         "weworkremotely": wwr_count,
         "himalayas": himalayas_count,
+        "jobberman": jobberman_count,
         "total_new": total_new
     }
+
