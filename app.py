@@ -115,8 +115,8 @@ async def api_get_jobs(
     )
     return {"jobs": jobs, "total": len(jobs)}
 
-@app.post("/api/scan")
-async def api_scan(background_tasks: BackgroundTasks):
+@app.api_route("/api/scan", methods=["GET", "POST"])
+async def api_scan():
     try:
         results = run_all_scrapers()
         settings = get_settings()
@@ -131,6 +131,11 @@ async def api_scan(background_tasks: BackgroundTasks):
         return {"status": "success", "results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ping")
+@app.get("/health")
+async def ping():
+    return {"status": "ok", "message": "Job Hunter is alive and running!"}
 
 @app.post("/api/generate-pitch")
 async def api_generate_pitch(req: PitchRequest):
