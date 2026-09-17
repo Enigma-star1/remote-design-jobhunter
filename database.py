@@ -208,9 +208,9 @@ def get_jobs(
                      AND url NOT IN (SELECT url FROM applications WHERE url IS NOT NULL AND url != '')"""
         
     if search:
-        query += " AND (title ILIKE ? OR company ILIKE ? OR description ILIKE ?)" if IS_POSTGRES else " AND (title LIKE ? OR company LIKE ? OR description LIKE ?)"
+        query += " AND (title ILIKE ? OR company ILIKE ? OR description ILIKE ? OR source ILIKE ?)" if IS_POSTGRES else " AND (title LIKE ? OR company LIKE ? OR description LIKE ? OR source LIKE ?)"
         term = f"%{search}%"
-        params.extend([term, term, term])
+        params.extend([term, term, term, term])
         
     if category and category.lower() != "all":
         query += " AND category ILIKE ?" if IS_POSTGRES else " AND category LIKE ?"

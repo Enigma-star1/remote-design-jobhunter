@@ -584,8 +584,72 @@ def fetch_jobberman_jobs() -> int:
             
     return count
 
+def fetch_freelancer_jobs() -> int:
+    """Freelancer.com: CcHUB Technical Partner active freelance projects API"""
+    count = 0
+    queries = ["graphic design", "ui ux design", "logo design", "product design", "web design"]
+    seen_ids = set()
+    
+    for q in queries:
+        try:
+            url = f"https://www.freelancer.com/api/projects/0.1/projects/active/?query={requests.utils.quote(q)}&job_details=true&limit=25"
+            r = requests.get(url, headers=HEADERS, timeout=10)
+            if r.status_code == 200:
+                data = r.json()
+                for p in data.get("result", {}).get("projects", []):
+                    pid = p.get("id")
+                    if not pid or pid in seen_ids:
+                        continue
+                    seen_ids.add(pid)
+                    
+                    title = p.get("title", "").strip()
+                    desc = p.get("preview_description", "").strip()
+                    
+                    if not is_design_role(title, desc):
+                        continue
+                        
+                    seo_url = p.get("seo_url", "")
+                    job_url = f"https://www.freelancer.com/projects/{seo_url}" if seo_url else f"https://www.freelancer.com/projects/{pid}"
+                    
+                    budget = p.get("budget", {})
+                    currency = p.get("currency", {}).get("code", "USD")
+                    min_b = budget.get("minimum")
+                    max_b = budget.get("maximum")
+                    if min_b and max_b:
+                        salary = f"${min_b:g} - ${max_b:g} {currency}"
+                    elif min_b:
+                        salary = f"${min_b:g}+ {currency}"
+                    else:
+                        salary = "Disclosed on Bid"
+                        
+                    submit_date = p.get("submitdate")
+                    date_str = datetime.fromtimestamp(submit_date).strftime("%Y-%m-%d") if submit_date else datetime.utcnow().strftime("%Y-%m-%d")
+                    
+                    classification = classify_job(title, desc)
+                    
+                    saved = save_job({
+                        "source": "Freelancer (CcHUB Partner)",
+                        "external_id": f"freelancer_{pid}",
+                        "title": title,
+                        "company": "Freelancer Client",
+                        "location": "Remote (Worldwide / Freelancer)",
+                        "url": job_url,
+                        "description": desc[:1200],
+                        "category": classification["category"],
+                        "level": classification["level"],
+                        "salary": salary,
+                        "is_worldwide": True,
+                        "date_posted": date_str
+                    })
+                    if saved:
+                        count += 1
+        except Exception as e:
+            print(f"Error fetching Freelancer query {q}: {e}")
+            
+    return count
+
 def run_all_scrapers() -> Dict[str, int]:
-    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas, Jobberman"""
+    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas, Jobberman, Freelancer"""
     telegram_count = fetch_telegram_channel_jobs()
     reddit_count = fetch_reddit_design_jobs()
     twitter_count = fetch_twitter_design_jobs()
@@ -593,7 +657,8 @@ def run_all_scrapers() -> Dict[str, int]:
     wwr_count = fetch_weworkremotely_jobs()
     himalayas_count = fetch_himalayas_jobs()
     jobberman_count = fetch_jobberman_jobs()
-    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count + jobberman_count
+    freelancer_count = fetch_freelancer_jobs()
+    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count + jobberman_count + freelancer_count
     return {
         "telegram": telegram_count,
         "reddit": reddit_count,
@@ -602,6 +667,7 @@ def run_all_scrapers() -> Dict[str, int]:
         "weworkremotely": wwr_count,
         "himalayas": himalayas_count,
         "jobberman": jobberman_count,
+        "freelancer": freelancer_count,
         "total_new": total_new
     }
 
