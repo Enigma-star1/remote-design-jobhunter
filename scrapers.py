@@ -18,31 +18,67 @@ def clean_html(html_text: str) -> str:
     return soup.get_text(separator=" ", strip=True)
 
 def is_design_role(title: str, description: str = "", tags: Any = None) -> bool:
-    """Strictly filter for genuine design positions only"""
+    """Strictly filter for genuine UI/UX, product, visual, and graphic design positions only"""
     title_lower = title.lower()
     
-    # Non-design disqualifiers
-    disqualifiers = [
-        "sales manager", "sales advisor", "handyperson", "cabin crew", "flight attendant",
-        "service desk", "customer service", "receptionist", "bookkeeper", "driver",
-        "accountant", "legal", "nurse", "cook", "chef", "warehouse", "cashier",
-        "plumber", "electrician", "mechanic", "security guard", "cleaner", "copywriter", 
-        "freelance writer", "inside sales", "business development", "data labeling",
-        "speculative application", "small batches", "content reviewer", "software engineer",
-        "backend", "full stack", "devops", "cloud architect", "data engineer", "sourcing partner"
+    # 1. Non-design disqualifiers (Sales, HR, recruiting, software engineering, hardware, IT, civil/electrical)
+    disqualifier_patterns = [
+        r'\bsales\b', r'\brecruit(er|ing|ment)?\b', r'\bsourc(er|ing)\b',
+        r'\btalent acquisition\b', r'\btalent partner\b', r'\bhuman resources\b', r'\bhr\b',
+        r'\bsoftware engineer\b', r'\bbackend\b', r'\bfull\s*stack\b', r'\bdevops\b',
+        r'\bcloud architect\b', r'\bdata engineer\b', r'\bdata science\b', r'\bdata analyst\b',
+        r'\blinux\b', r'\bkernel\b', r'\bfirmware\b', r'\bbios\b', r'\bhardware\b',
+        r'\belectrical\b', r'\bmechanical\b', r'\bcivil\b', r'\bstructural\b', r'\bprecast\b',
+        r'\basic\b', r'\bfpga\b', r'\bsubstation\b', r'\bcontrols engineer\b',
+        r'\bquality assurance\b', r'\bqa\b', r'\btest engineer\b', r'\btesting\b',
+        r'\bnetsuite\b', r'\bsalesforce\b', r'\bcompensation\b', r'\baccount executive\b',
+        r'\baccount manager\b', r'\bbusiness development\b', r'\bproject manager\b',
+        r'\bprogram manager\b', r'\bscrum master\b', r'\bcustomer service\b',
+        r'\bclient support\b', r'\btechnical support\b', r'\boperations manager\b',
+        r'\blegal\b', r'\baccountant\b', r'\bbookkeeper\b', r'\bcopywriter\b',
+        r'\bwriter\b', r'\bcontent reviewer\b', r'\bdata entry\b', r'\bcabin crew\b',
+        r'\bflight attendant\b', r'\bhandyperson\b', r'\breceptionist\b', r'\bdriver\b',
+        r'\bprosthetic(s)?\b', r'\borthotic(s)?\b', r'\binterior\b',
+        r'\bdecorator\b', r'\bcarpenter\b', r'\blandscape\b'
     ]
-    if any(dq in title_lower for dq in disqualifiers):
-        return False
-        
-    # Required design title keywords
-    strict_design_title_keywords = [
-        "design", "ui", "ux", "product designer", "graphic", "visual", "brand", 
-        "figma", "illustrator", "creative", "motion", "art director", "prototyp",
-        "animat", "3d artist", "design system", "interaction", "web designer", "thumbnail"
+    
+    for pat in disqualifier_patterns:
+        if re.search(pat, title_lower):
+            return False
+            
+    # 2. Positive Design Matches (Balogun Olamide's domain: UI/UX & Graphic/Visual Design)
+    positive_patterns = [
+        r'\b(ui|ux|ui/ux|ux/ui|ui-ux|ux-ui)\b',
+        r'\bproduct design(er)?\b',
+        r'\bgraphic design(er)?\b',
+        r'\bvisual design(er)?\b',
+        r'\bbrand design(er)?\b',
+        r'\bweb design(er)?\b',
+        r'\bmotion design(er)?\b',
+        r'\bmobile design(er)?\b',
+        r'\binteraction design(er)?\b',
+        r'\bdesign systems?\b',
+        r'\bart director\b',
+        r'\bcreative director\b',
+        r'\billustrator\b',
+        r'\b3d artist\b',
+        r'\banimat(or|ion)\b',
+        r'\buser experience\b',
+        r'\buser interface\b',
+        r'\bfigma\b',
+        r'\bpresentation design(er)?\b',
+        r'\bthumbnail\b',
+        r'\bdesign lead\b',
+        r'\blead designer\b',
+        r'\bsenior designer\b',
+        r'\bjunior designer\b',
+        r'\bdesigner\b'
     ]
-    if any(kw in title_lower for kw in strict_design_title_keywords):
-        return True
-        
+    
+    for pat in positive_patterns:
+        if re.search(pat, title_lower):
+            return True
+            
     return False
 
 def classify_job(title: str, description: str, tags: Any = None) -> Dict[str, Any]:

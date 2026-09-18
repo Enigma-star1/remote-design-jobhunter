@@ -144,6 +144,22 @@ def init_db():
         for k, v in default_settings.items():
             cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
             
+    # Automated cleanup: Purge any non-design roles from database
+    disqualified = [
+        "%sales%", "%recruit%", "%sourcer%", "%talent acquisition%", "%talent partner%",
+        "%kernel%", "%linux%", "%software engineer%", "%electrical%", "%mechanical%",
+        "%civil%", "%hardware%", "%netsuite%", "%salesforce%", "%compensation%",
+        "%account executive%", "%account manager%", "%project manager%", "%program manager%",
+        "%scrum master%", "%operations manager%", "%data engineer%", "%data science%",
+        "%devops%", "%backend%", "%full stack%", "%qa%", "%quality assurance%",
+        "%prosthetic%", "%orthotic%", "%interior%", "%carpenter%", "%landscape%"
+    ]
+    for dq in disqualified:
+        if IS_POSTGRES:
+            cursor.execute("DELETE FROM jobs WHERE title ILIKE %s", (dq,))
+        else:
+            cursor.execute("DELETE FROM jobs WHERE title LIKE ?", (dq,))
+
     conn.commit()
     conn.close()
 
@@ -231,7 +247,21 @@ def get_jobs(
         query += " AND date_posted >= (CURRENT_DATE - INTERVAL '3 days')::text" if IS_POSTGRES else " AND date_posted >= date('now', '-3 days')"
     elif date_filter == "7days":
         query += " AND date_posted >= (CURRENT_DATE - INTERVAL '7 days')::text" if IS_POSTGRES else " AND date_posted >= date('now', '-7 days')"
-        
+    
+    # Guarantee no non-design roles ever display
+    strict_disqualified = [
+        "%sales%", "%recruit%", "%sourcer%", "%talent acquisition%", "%talent partner%",
+        "%kernel%", "%linux%", "%software engineer%", "%electrical%", "%mechanical%",
+        "%civil%", "%hardware%", "%netsuite%", "%salesforce%", "%compensation%",
+        "%account executive%", "%account manager%", "%project manager%", "%program manager%",
+        "%scrum master%", "%operations manager%", "%data engineer%", "%data science%",
+        "%devops%", "%backend%", "%full stack%", "%qa%", "%quality assurance%",
+        "%prosthetic%", "%orthotic%", "%interior%", "%carpenter%", "%landscape%"
+    ]
+    for dq in strict_disqualified:
+        query += " AND title NOT ILIKE ?" if IS_POSTGRES else " AND title NOT LIKE ?"
+        params.append(dq)
+
     query += " ORDER BY date_posted DESC, id DESC LIMIT ?"
     params.append(limit)
     
