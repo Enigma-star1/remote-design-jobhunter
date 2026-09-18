@@ -148,6 +148,14 @@
                         <span>🇪🇺 Useme (EU Invoicing)</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     </a>
+                    <a href="https://www.careerhound.io" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold transition">
+                        <span>🐕 CareerHound</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                    <a href="https://www.careerhound.io/worldwide" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold transition">
+                        <span>🌐 Worldwide Directory</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
                     <a href="https://grower.tech" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-brand-navy hover:bg-brand-surfaceHover text-brand-textMuted hover:text-white border border-brand-border rounded-xl text-xs font-semibold transition">
                         <span>🌱 Grower</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -427,15 +435,18 @@
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
                         <a id="btn-search-ats" href="#" target="_blank" class="bg-brand-surface hover:bg-brand-surfaceHover border border-brand-border text-slate-200 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
-                            🔍 Find Direct ATS (Greenhouse/Lever)
+                            🔍 Direct ATS (GH/Lever)
+                        </a>
+                        <a id="btn-search-careerhound" href="https://www.careerhound.io/worldwide" target="_blank" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
+                            🐕 CareerHound Roster
                         </a>
                         <a id="btn-search-linkedin" href="#" target="_blank" class="bg-brand-surface hover:bg-brand-surfaceHover border border-brand-border text-sky-400 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
-                            👔 Find Design Lead on LinkedIn
+                            👔 Lead on LinkedIn
                         </a>
                         <a id="btn-open-email" href="#" class="bg-brand-teal/20 hover:bg-brand-teal/30 border border-brand-teal/40 text-emerald-300 px-3 py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-center font-medium">
-                            ✉️ Send Direct Email (mailto)
+                            ✉️ Send Email
                         </a>
                     </div>
                 </div>
@@ -595,12 +606,15 @@
                     const isReddit = job.source.toLowerCase().includes('reddit');
                     const isJobberman = job.source.toLowerCase().includes('jobberman');
                     const isFreelancer = job.source.toLowerCase().includes('freelancer');
+                    const isCareerHound = job.source.toLowerCase().includes('careerhound');
                     const sourceBadgeClass = isReddit 
                         ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
                         : isJobberman 
                         ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
                         : isFreelancer
                         ? 'bg-sky-500/10 text-sky-400 border-sky-500/20 font-semibold'
+                        : isCareerHound
+                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 font-semibold'
                         : 'bg-brand-navy text-brand-textMuted border-brand-border';
 
                     html += `
@@ -744,7 +758,7 @@
             
             // Open direct ATS search link if not a reddit link
             if (currentModalJob) {
-                if (currentModalJob.source.toLowerCase().includes('reddit') || currentModalJob.source.toLowerCase().includes('jobberman') || currentModalJob.source.toLowerCase().includes('freelancer')) {
+                if (currentModalJob.source.toLowerCase().includes('reddit') || currentModalJob.source.toLowerCase().includes('jobberman') || currentModalJob.source.toLowerCase().includes('freelancer') || currentModalJob.source.toLowerCase().includes('careerhound')) {
                     window.open(currentModalJob.url, '_blank');
                 } else {
                     const cleanCompany = currentModalJob.company.trim();

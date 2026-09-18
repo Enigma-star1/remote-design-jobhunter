@@ -648,8 +648,68 @@ def fetch_freelancer_jobs() -> int:
             
     return count
 
+def fetch_careerhound_jobs() -> int:
+    """CareerHound: Scrapes direct ATS career pages of top companies hiring remote worldwide as featured on careerhound.io"""
+    count = 0
+    TARGET_COMPANIES = [
+        ("Canonical", "canonical"),
+        ("Duolingo", "duolingo"),
+        ("GitLab", "gitlab"),
+        ("vidIQ", "vidiq"),
+        ("SimScale", "simscale"),
+        ("Collabora", "collabora"),
+        ("Tyk Technologies", "tyk"),
+        ("Automattic", "automattic"),
+        ("Percona", "percona"),
+        ("SafetyWing", "safetywing")
+    ]
+    
+    for company, slug in TARGET_COMPANIES:
+        try:
+            url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs"
+            r = requests.get(url, headers=HEADERS, timeout=5)
+            if r.status_code == 200:
+                data = r.json()
+                for j in data.get("jobs", []):
+                    title = j.get("title", "").strip()
+                    jid = j.get("id")
+                    job_url = j.get("absolute_url")
+                    loc = j.get("location", {}).get("name", "Remote (Worldwide)")
+                    
+                    if not is_design_role(title, ""):
+                        continue
+                        
+                    pub_date = j.get("updated_at") or j.get("first_published")
+                    try:
+                        date_str = pub_date[:10] if pub_date else datetime.utcnow().strftime("%Y-%m-%d")
+                    except:
+                        date_str = datetime.utcnow().strftime("%Y-%m-%d")
+                        
+                    classification = classify_job(title, "")
+                    
+                    saved = save_job({
+                        "source": "CareerHound (Hidden ATS)",
+                        "external_id": f"careerhound_{slug}_{jid}",
+                        "title": title,
+                        "company": company,
+                        "location": f"Remote ({loc})" if "remote" not in loc.lower() else loc,
+                        "url": job_url,
+                        "description": f"Direct company ATS job from {company}. Sourced from CareerHound worldwide direct employer network. Apply directly on their career portal without recruiter fees or paywalls.",
+                        "category": classification["category"],
+                        "level": classification["level"],
+                        "salary": "Disclosed on Apply",
+                        "is_worldwide": True,
+                        "date_posted": date_str
+                    })
+                    if saved:
+                        count += 1
+        except Exception as e:
+            print(f"Error fetching CareerHound ATS {company}: {e}")
+            
+    return count
+
 def run_all_scrapers() -> Dict[str, int]:
-    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas, Jobberman, Freelancer"""
+    """Run all 100% free-to-apply sources: Telegram, Reddit, X/Twitter, WWR, Remotive, Himalayas, Jobberman, Freelancer, CareerHound"""
     telegram_count = fetch_telegram_channel_jobs()
     reddit_count = fetch_reddit_design_jobs()
     twitter_count = fetch_twitter_design_jobs()
@@ -658,7 +718,8 @@ def run_all_scrapers() -> Dict[str, int]:
     himalayas_count = fetch_himalayas_jobs()
     jobberman_count = fetch_jobberman_jobs()
     freelancer_count = fetch_freelancer_jobs()
-    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count + jobberman_count + freelancer_count
+    careerhound_count = fetch_careerhound_jobs()
+    total_new = telegram_count + reddit_count + twitter_count + remotive_count + wwr_count + himalayas_count + jobberman_count + freelancer_count + careerhound_count
     return {
         "telegram": telegram_count,
         "reddit": reddit_count,
@@ -668,6 +729,7 @@ def run_all_scrapers() -> Dict[str, int]:
         "himalayas": himalayas_count,
         "jobberman": jobberman_count,
         "freelancer": freelancer_count,
+        "careerhound": careerhound_count,
         "total_new": total_new
     }
 
